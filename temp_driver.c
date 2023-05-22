@@ -23,7 +23,7 @@ void start_signal(){
 	gpio_set(DHT_PIN, 0);
 	
 	timer_enable();
-	while(!start_signal_ended); // Whait the time to end the start signal.
+	while(start_signal_ended); // Whait the time to end the start signal.
 	
 	gpio_set_mode(DHT_PIN, PullUp);	
 	timer_disable();
