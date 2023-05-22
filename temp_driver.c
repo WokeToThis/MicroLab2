@@ -88,7 +88,7 @@ uint64_t read_data(){
 	while(read_bits < 40){
 			
 			
-		while(new_bit_to_read); // Wait to read new bit.
+		while(!new_bit_to_read); // Wait to read new bit.
 		
 		if (counted_value > 45){
 				
