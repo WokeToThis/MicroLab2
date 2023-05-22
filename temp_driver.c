@@ -114,8 +114,8 @@ float get_temperature(){
 	
 	uint64_t data = read_data();
 	
-	uint8_t int_value = (data & 0xFF00) >> 16;
-	uint8_t dec_value = (data & 0xFF) >> 8;
+	uint8_t int_value = (data & 0xFF0000) >> 16;
+	uint8_t dec_value = (data & 0xFF00) >> 8;
 	
 	float temperature = (float)int_value + (float)dec_value;
 	
