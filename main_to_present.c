@@ -27,22 +27,6 @@ int toggle_led = 0;
 
 void timer_isr(void){
 	
-	//basically this should start communicating with the sensor
-	//this assumes the status is at high level vcc
-	
-	//first pull down voltage at least 18 ms
-	
-	//now pull back again for 20-40us-> this should tell the sensor to reply 
-	
-	//sensor should pull down for 80us and and pull up for 80us and then the data should start
-	
-	//sensor will pull down for 50 us to announce that will send 1-bit data
-	
-	//0 is a 26-28us pulse
-	//1 is a 70us pulse 
-	
-	//at the end it will pull down for 50 us
-	
 	timer_counter += 1;
 	
 	if( timer_counter % timer_mod == 0 ){
@@ -78,10 +62,6 @@ void first_call(void){
 	delay_us(10);
 	
 	receive();
-//	if(!gpio_get(PINAKI)){
-//		delay_us(80);
-//		receive();
-//	}
 	
 }
 
@@ -113,16 +93,23 @@ void receive(void){
 		}
 	}
 	
+	uint8_t H_ck_int = (value & 0xFF00000000) >> 32;
+	uint8_t H_ck_dec = (value & 0xFF000000) >> 24;
 	uint8_t int_value = (value & 0xFF0000) >> 16;
 	uint8_t dec_value = (value & 0xFF00) >> 8;
+	uint8_t check_sum = (value & 0xFF);
 	
+	
+	int temp_check = H_ck_dec + H_ck_int + int_value + dec_value;
 	
 	int denom = 1;
 	while(denom < dec_value)
 		denom = denom * 10;
 	
-	temperature = (float)int_value + ((float)dec_value / denom);
-	
+	if(temp_check == check_sum)
+		temperature = (float)int_value + ((float)dec_value / denom);
+	else 
+		temperature = -1.0;
 }
 	
 int last_value = 0;
@@ -176,42 +163,6 @@ void button_pressed_isr(int src){
 }
 
 
-//int main(void){
-//	
-//	__enable_irq();
-//	
-////	uart_init(115200);
-////	uart_enable();
-////	uart_set_rx_callback(uart_receive_isr);
-////	
-////	delay_ms(10);
-////	
-////	while(scan_has_ended == 0);
-////	period = last_ac_value + second_ac_value;
-////	if (period == 2)
-////		period = 4;
-//		
-
-//	timer_init(CLK_FREQ / 1);
-//	timer_set_callback(timer_isr);
-//	timer_enable();
-//	
-////	gpio_set_mode(P_SW, PullUp);
-////	gpio_set_trigger(P_SW, Rising);
-////	gpio_set_callback(P_SW, button_pressed_isr );
-//	
-//	
-//	char word[20];
-//	while(1){
-//		//__WFI();
-//		sprintf(word, "\r\n%f", temperature);
-//		uart_print(word);		
-//	}
-//	
-//	
-//	return 0;
-//}
-
 int main(void){
 
 	
@@ -244,7 +195,7 @@ int main(void){
 		if(new_value == 1){
 			sprintf(word, "\r\n temp is: %f, f is: %d", temperature, timer_mod);
 			uart_print(word);		
-			if(temperature > 25){
+			if(temperature > 30){
 				leds_set(1, 0, 0);
 				toggle_led = 0;
 			}
